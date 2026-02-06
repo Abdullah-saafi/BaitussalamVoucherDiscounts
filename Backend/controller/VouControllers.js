@@ -1,0 +1,137 @@
+import Voucher from "../models/Voucher.js";
+import { v4 as uuidv4 } from "uuid";
+
+export const createVoucher = async (req, res) => {
+  const {
+    shopName,
+    discountType,
+    specificTests,
+    discountPercentage,
+    expiryDate,
+    totalCards,
+  } = req.body;
+
+  try {
+    const cards = [];
+
+    for (let i = 0; i < totalCards; i++) {
+      const cardNumber = `BWT-${Date.now()}-${uuidv4()
+        .slice(0, 4)
+        .toUpperCase()}`;
+
+      cards.push({
+        cardNumber,
+        qrCode: cardNumber,
+        status: "active",
+      });
+    }
+
+    const voucher = new Voucher({
+      shopName,
+      discountType,
+      specificTests: discountType === "specific_tests" ? specificTests : [],
+      discountPercentage,
+      expiryDate,
+      totalCards,
+      cards,
+    });
+
+    await voucher.save();
+    res.status(201).json({ message: "Voucher created", voucher });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getAllVouchers = async (req, res) => {
+  try {
+    const vouchers = await Voucher.find().sort({ createdAt: -1 });
+    res.status(200).json(vouchers);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getVoucherCards = async (req, res) => {
+  try {
+    const voucher = await Voucher.findById(req.params.id);
+    if (!voucher) return res.status(404).json({ message: "Not found" });
+
+    res.status(200).json(voucher.cards);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const deleteVoucher = async (req, res) => {
+  try {
+    const voucher = await Voucher.findByIdAndDelete(req.params.id);
+    if (!voucher) return res.status(404).json({ message: "Not found" });
+
+    res.status(200).json({ message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getCardDetails = async (req, res) => {
+  try {
+    const value = req.params.cardNumber;
+
+    const voucher = await Voucher.findOne({
+      $or: [{ "cards.cardNumber": value }, { "cards.qrCode": value }],
+    });
+
+    if (!voucher) return res.status(404).json({ message: "Card not found" });
+
+    const card = voucher.cards.find(
+      (c) => c.cardNumber === value || c.qrCode === value,
+    );
+
+    res.status(200).json({
+      card,
+      voucher: {
+        shopName: voucher.shopName,
+        discountPercentage: voucher.discountPercentage,
+        discountType: voucher.discountType,
+        specificTests: voucher.specificTests,
+        expiryDate: voucher.expiryDate,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Use card
+export const useCard = async (req, res) => {
+  const { cardNumber } = req.body;
+
+  try {
+    const voucher = await Voucher.findOne({
+      "cards.cardNumber": cardNumber,
+    });
+
+    if (!voucher) return res.status(404).json({ message: "Card not found" });
+
+    const card = voucher.cards.find((c) => c.cardNumber === cardNumber);
+
+    if (card.status !== "active") {
+      return res.status(400).json({ message: `Card is ${card.status}` });
+    }
+
+    if (new Date(voucher.expiryDate) < new Date()) {
+      card.status = "expired";
+      await voucher.save();
+      return res.status(400).json({ message: "Card expired" });
+    }
+
+    card.status = "used";
+    card.usedAt = new Date();
+
+    await voucher.save();
+    res.status(200).json({ message: "Discount applied", card });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
