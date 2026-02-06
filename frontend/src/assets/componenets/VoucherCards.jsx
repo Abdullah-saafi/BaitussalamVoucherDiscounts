@@ -188,13 +188,14 @@ const VoucherCards = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ">
         {cards.map((card, index) => (
           <div
             key={card.cardNumber}
             ref={(el) => (cardsRef.current[index] = el)}
             data-card-index={index}
             style={{
+              width: "25rem",
               background:
                 "linear-gradient(135deg, rgb(254, 249, 195), rgb(253, 230, 138))",
               border: "2px solid rgb(250, 204, 21)",
@@ -209,7 +210,7 @@ const VoucherCards = () => {
             }}
           >
             <img
-              src="/imgs/logo.png"
+              src="/imgs/Logo.jpg"
               alt="Baitusslam Logo"
               style={{ width: "80px", height: "80px", marginBottom: "12px" }}
               crossOrigin="anonymous"
@@ -280,7 +281,7 @@ const VoucherCards = () => {
                 marginBottom: "4px",
               }}
             >
-              Card Number: {card.cardNumber}
+              {card.cardNumber}
             </p>
 
             <button
