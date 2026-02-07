@@ -8,6 +8,8 @@ const ShowVouLabTech = () => {
   const [searchNumber, setSearchNumber] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   const fetchVouchers = async () => {
     try {
@@ -25,6 +27,11 @@ const ShowVouLabTech = () => {
   useEffect(() => {
     fetchVouchers();
   }, []);
+
+  // Reset to page 1 when shop or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedShop, searchNumber]);
 
   const getShopList = () => {
     const shops = [...new Set(vouchers.map((v) => v.shopName))];
@@ -80,7 +87,25 @@ const ShowVouLabTech = () => {
   }
 
   const shopList = getShopList();
-  const displayCards = getCardsFromSelectedShop();
+  const allDisplayCards = getCardsFromSelectedShop();
+
+  // Pagination logic
+  const totalPages = Math.ceil(allDisplayCards.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const displayCards = allDisplayCards.slice(startIndex, endIndex);
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   return (
     <div className="p-6 mb-10">
@@ -124,75 +149,113 @@ const ShowVouLabTech = () => {
 
       {!selectedShop ? (
         <p className="text-center text-gray-500">Select a shop to view cards</p>
-      ) : displayCards.length === 0 ? (
+      ) : allDisplayCards.length === 0 ? (
         <p className="text-center text-gray-500">No cards found</p>
       ) : (
-        <div className="bg-white rounded shadow overflow-x-auto">
-          <table className="w-full border border-gray-400 border-collapse">
-            <thead className="bg-blue-600 text-white text-xl">
-              <tr>
-                <th className="border border-gray-400 p-3 text-left">
-                  Card No:
-                </th>
-                <th className="border border-gray-400 p-3 text-center">QR</th>
-                <th className="border border-gray-400 p-3 text-center">
-                  Discount
-                </th>
-                <th className="border border-gray-400 p-3 text-center">
-                  Status
-                </th>
-                <th className="border border-gray-400 p-3 text-left">
-                  Used By
-                </th>
-                <th className="border border-gray-400 p-3 text-left">
-                  Used At
-                </th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {displayCards.map((card) => (
-                <tr key={card.cardNumber}>
-                  <td className="border border-gray-400 p-3 font-mono">
-                    {card.cardNumber}
-                  </td>
-
-                  <td className="border border-gray-400 p-3 flex justify-center">
-                    <QRCode value={card.qrCode} size={70} />
-                  </td>
-
-                  <td className="border border-gray-400 p-3 text-center">
-                    {card.discount}%
-                  </td>
-
-                  <td className="border border-gray-400 p-3 text-center">
-                    <span
-                      className={`px-3 py-1 rounded text-white text-xs ${
-                        card.status === "active"
-                          ? "bg-green-500"
-                          : card.status === "used"
-                            ? "bg-gray-500"
-                            : "bg-red-500"
-                      }`}
-                    >
-                      {card.status}
-                    </span>
-                  </td>
-
-                  <td className="border border-gray-400 p-3">
-                    {card.usedBy || "-"}
-                  </td>
-
-                  <td className="border border-gray-400 p-3">
-                    {card.usedAt
-                      ? new Date(card.usedAt).toLocaleDateString()
-                      : "-"}
-                  </td>
+        <>
+          <div className="bg-white rounded shadow overflow-x-auto">
+            <table className="w-full border border-gray-400 border-collapse">
+              <thead className="bg-blue-600 text-white text-xl">
+                <tr>
+                  <th className="border border-gray-400 p-3 text-center">#</th>
+                  <th className="border border-gray-400 p-3 text-left">
+                    Card No:
+                  </th>
+                  <th className="border border-gray-400 p-3 text-center">QR</th>
+                  <th className="border border-gray-400 p-3 text-center">
+                    Discount
+                  </th>
+                  <th className="border border-gray-400 p-3 text-center">
+                    Status
+                  </th>
+                  <th className="border border-gray-400 p-3 text-left">
+                    Used By
+                  </th>
+                  <th className="border border-gray-400 p-3 text-left">
+                    Used At
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+
+              <tbody>
+                {displayCards.map((card, index) => (
+                  <tr key={card.cardNumber}>
+                    <td className="border border-gray-400 p-3 text-center font-bold">
+                      {startIndex + index + 1}
+                    </td>
+
+                    <td className="border border-gray-400 p-3 font-mono">
+                      {card.cardNumber}
+                    </td>
+
+                    <td className="border border-gray-400 p-3 flex justify-center">
+                      <QRCode value={card.qrCode} size={70} />
+                    </td>
+
+                    <td className="border border-gray-400 p-3 text-center">
+                      {card.discount}%
+                    </td>
+
+                    <td className="border border-gray-400 p-3 text-center">
+                      <span
+                        className={`px-3 py-1 rounded text-white text-xs ${
+                          card.status === "active"
+                            ? "bg-green-500"
+                            : card.status === "used"
+                              ? "bg-gray-500"
+                              : "bg-red-500"
+                        }`}
+                      >
+                        {card.status}
+                      </span>
+                    </td>
+
+                    <td className="border border-gray-400 p-3">
+                      {card.usedBy || "-"}
+                    </td>
+
+                    <td className="border border-gray-400 p-3">
+                      {card.usedAt
+                        ? new Date(card.usedAt).toLocaleDateString()
+                        : "-"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="mt-6 flex justify-between items-center bg-white p-4 rounded shadow">
+            <div className="text-gray-600">
+              Showing {startIndex + 1} to{" "}
+              {Math.min(endIndex, allDisplayCards.length)} of{" "}
+              {allDisplayCards.length} cards
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={goToPrevPage}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+
+              <div className="px-4 py-2 bg-gray-100 rounded">
+                Page {currentPage} of {totalPages}
+              </div>
+
+              <button
+                onClick={goToNextPage}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

@@ -105,16 +105,24 @@ export const getCardDetails = async (req, res) => {
 
 // Use card
 export const useCard = async (req, res) => {
-  const { cardNumber } = req.body;
+  const { cardNumber, usedBy } = req.body;
+
+  console.log("useCard body:", req.body);
 
   try {
     const voucher = await Voucher.findOne({
       "cards.cardNumber": cardNumber,
     });
 
-    if (!voucher) return res.status(404).json({ message: "Card not found" });
+    if (!voucher) {
+      return res.status(404).json({ message: "Card not found" });
+    }
 
     const card = voucher.cards.find((c) => c.cardNumber === cardNumber);
+
+    if (!card) {
+      return res.status(404).json({ message: "Card not found in voucher" });
+    }
 
     if (card.status !== "active") {
       return res.status(400).json({ message: `Card is ${card.status}` });
@@ -126,12 +134,19 @@ export const useCard = async (req, res) => {
       return res.status(400).json({ message: "Card expired" });
     }
 
+    // ✅ SAVE EVERYTHING
     card.status = "used";
     card.usedAt = new Date();
+    card.usedBy = usedBy || "Unknown";
 
     await voucher.save();
-    res.status(200).json({ message: "Discount applied", card });
+
+    return res.status(200).json({
+      message: "Discount applied",
+      card,
+    });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };

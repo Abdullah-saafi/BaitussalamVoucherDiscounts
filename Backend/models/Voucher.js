@@ -7,6 +7,10 @@ const voucherSchema = new mongoose.Schema(
       enum: ["Naheed", "Chase_Value", "Chase_up", "J_jamshed"],
       required: true,
     },
+    qrId: {
+      type: String,
+      required: true,
+    },
     discountType: {
       type: String,
       enum: ["all_tests", "specific_tests"],

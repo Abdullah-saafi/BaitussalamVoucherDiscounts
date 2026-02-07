@@ -27,7 +27,7 @@ const LoginComp = () => {
     setError("");
     try {
       const response = await axios.post("http://localhost:5000/login", data);
-      
+
       // Store token and user data
       login(response.data, response.data.token);
 
@@ -48,10 +48,10 @@ const LoginComp = () => {
   };
 
   return (
-    <div className="flex flex-col px-30">
-      <h2 className="text-2xl font-bold my-10 ">
+    <div className="flex flex-col px-40 mt-30">
+      <h2 className="text-3xl font-bold  py-6">
         Assalam-o-alaikum <br /> Please{" "}
-        <span className="text-blue-900 text-3xl font-extrabold"> Login</span>
+        <span className="text-blue-900 text-5xl font-extrabold"> Login</span>
       </h2>
       {error && (
         <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">{error}</div>
@@ -62,14 +62,14 @@ const LoginComp = () => {
           type="email"
           placeholder="Email"
           required
-          className="p-2 border border-gray-300 rounded"
+          className="p-4 border border-gray-300 rounded text-xl"
         />
         <input
           {...register("password")}
           type="password"
           placeholder="Password"
           required
-          className="p-2 border border-gray-300 rounded"
+          className="p-4 border border-gray-300 rounded text-xl"
         />
         <button
           type="submit"
