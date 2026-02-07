@@ -4,10 +4,13 @@ const voucherSchema = new mongoose.Schema(
   {
     shopName: {
       type: String,
-      enum: ["Naheed", "Chase_Value", "Chase_up", "J_jamshed"],
       required: true,
     },
-    qrId: {
+    idName: {
+      type: String,
+      required: true,
+    },
+    partnerArea: {
       type: String,
       required: true,
     },

@@ -69,15 +69,18 @@ const CreateVou = () => {
   const formFields = [
     {
       name: "shopName",
-      label: "shop name",
-      type: "select",
-      options: [
-        { value: "", label: "Select Store" },
-        { value: "Naheed", label: "Naheed" },
-        { value: "Chase_Value", label: "Chase Value" },
-        { value: "CHase_up", label: "Chase up" },
-        { value: "J_jamshed", label: "J_jamshed" },
-      ],
+      label: "Partner ",
+      type: "text",
+    },
+    {
+      name: "idName",
+      label: "Branch Code:",
+      type: "text",
+    },
+    {
+      name: "partnerArea",
+      label: "Branch Area",
+      type: "text",
     },
     {
       name: "discountType",

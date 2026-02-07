@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from "uuid";
 export const createVoucher = async (req, res) => {
   const {
     shopName,
+    idName,
+    partnerArea,
     discountType,
     specificTests,
     discountPercentage,
@@ -15,7 +17,7 @@ export const createVoucher = async (req, res) => {
     const cards = [];
 
     for (let i = 0; i < totalCards; i++) {
-      const cardNumber = `BWT-${Date.now()}-${uuidv4()
+      const cardNumber = `${idName}-${Date.now()}-${uuidv4()
         .slice(0, 4)
         .toUpperCase()}`;
 
@@ -28,6 +30,8 @@ export const createVoucher = async (req, res) => {
 
     const voucher = new Voucher({
       shopName,
+      idName,
+      partnerArea,
       discountType,
       specificTests: discountType === "specific_tests" ? specificTests : [],
       discountPercentage,
@@ -39,7 +43,7 @@ export const createVoucher = async (req, res) => {
     await voucher.save();
     res.status(201).json({ message: "Voucher created", voucher });
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error" }, err);
   }
 };
 
@@ -48,7 +52,7 @@ export const getAllVouchers = async (req, res) => {
     const vouchers = await Voucher.find().sort({ createdAt: -1 });
     res.status(200).json(vouchers);
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error" }, err);
   }
 };
 
